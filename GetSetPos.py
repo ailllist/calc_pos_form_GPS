@@ -1,7 +1,6 @@
 import get_GPS_info
 from math import sin, cos, atan2, sqrt
 
-GROUND_TRUE = [6731.601514, 15907.205394, -20553.641738]
 
 class GpsSat:
 
@@ -51,6 +50,8 @@ class GpsSat:
         # step 1
         self.mu = 3.986005e+14
         self.Omega_e_dot = 7.2921151467e-5
+
+        self.xk, self.yk, self.zk = 0, 0, 0
 
     def calc_mean_motion(self):  # step 2
         n0 = sqrt(self.mu / self.sqrt_a**6)
@@ -109,6 +110,26 @@ class GpsSat:
         zk = ykd * sin(ik)
         return xk, yk, zk
 
+    def calc_gps_pos(self, cal_time):
+        n0 = self.calc_mean_motion()
+        n = self.calc_rmean_motion(n0)
+        tk = self.calc_tk(cal_time)
+        Mk = self.calc_Mk(n, tk)
+        Ek = self.calc_Ek(Mk)
+        fk = self.calc_TA(Ek)
+        phik = self.calc_aol(fk)
+        delta_uk, delta_rk, delta_ik = self.calc_delta_uri(phik)
+        uk, rk, ik = self.calc_uri(delta_uk, delta_rk, delta_ik, phik, Ek, tk)
+        xkd, ykd = self.calc_xkd_ykd(uk, rk)
+        Omega_k = self.calc_Omega_k(tk)
+        self.xk, self.yk, self.zk = self.calc_xyz(Omega_k, xkd, ykd, ik)
+
+    def __call__(self):
+        print(f"PRN : {self.PRN}\nepoch : {str(self.Epoch)}")
+        try:
+            print(f"xk, yk, zk : {self.xk}, {self.yk}, {self.zk}")
+        except:
+            print("Yet calc gps sat pos")
 
 def calc_E(M, e):
     Ek = M
@@ -166,9 +187,9 @@ def read_data(prn):
     return GpsSat_list
 
 if __name__ == "__main__":
-
-    PRN_NUMBER = 4
-    CAL_TIME = [11, 45, 0] # hour, minute, gps week day
+    GROUND_TRUE = [6731.601514, 15907.205394, -20553.641738]
+    PRN_NUMBER = 7
+    CAL_TIME = [15, 45, 0] # hour, minute, gps week day
 
     GpsSat_list = read_data(PRN_NUMBER)
     best_data = find_best_time(GpsSat_list, CAL_TIME)
