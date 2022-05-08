@@ -169,7 +169,7 @@ def read_data(prn):
 if __name__ == "__main__":
     
     PRN_NUMBER = 4
-    CAL_TIME = [11, 45, 0]
+    CAL_TIME = [11, 45, 0] # hour, minute, gps week day
     
     GpsSat_list = read_data(PRN_NUMBER)
     best_data = find_best_time(GpsSat_list, CAL_TIME)
