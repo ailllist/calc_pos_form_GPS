@@ -8,6 +8,7 @@ with open("suwn0320.15o") as f:
 loop = 0 # 2879
 
 while True:
+
     if data[1][:4] == "    ":
         info_of_data = data[:2]
         pre_data = info_of_data[0][30:]
@@ -18,15 +19,13 @@ while True:
         info_of_data = data[0]
         data_info = info_of_data[30:]
         data_lines = 1
-        
-        
-    print(f"before_int : {data_info[:2]}, lines : {data_lines}, data : {info_of_data}, loop : {loop}")
     
     sat_num = int(data_info[:2])
     tot_sat_str = data_info[2:]
     tot_sat = []
     cnt = 0
     tmp_line = ""
+
     while cnt != len(tot_sat_str):
         tmp_line += tot_sat_str[cnt]
         if len(tmp_line) == 3:
@@ -34,13 +33,12 @@ while True:
             tmp_line = ""
         cnt += 1
     rcv_data = data[data_lines:data_lines+sat_num*2]
-    for num, i in enumerate(data[:data_lines+sat_num*2]):
-        print(num, i)
-    #for num, i in enumerate(rcv_data):
-    #    print(num, i)
+
+    data = data[data_lines+sat_num*2:]
     try:
-        data = data[data_lines+sat_num*2:]
+        data_check = data[1]
     except:
         break
+
     loop += 1
 print(time.time()-s_time)
