@@ -61,8 +61,8 @@ class GpsSat:
         n = n0 + self.delta_n
         return n
 
-    def calc_tk(self, cal_time):  # step 4 time 2015/2/1 (일요일) 17:45 -> GPS Week Second
-        t = cal_time[0] * 3600 + cal_time[1] * 60 + cal_time[2] * 3600 * 24
+    def calc_tk(self, cal_time, STT=0):  # step 4 time 2015/2/1 (일요일) 17:45 -> GPS Week Second
+        t = cal_time[0] * 3600 + cal_time[1] * 60 + cal_time[2] * 3600 * 24 - STT
         tk = t - self.toe
         return tk
 
@@ -110,10 +110,10 @@ class GpsSat:
         zk = ykd * sin(ik)
         return xk, yk, zk
 
-    def calc_gps_pos(self, cal_time):
+    def calc_gps_pos(self, cal_time, STT=0):
         n0 = self.calc_mean_motion()
         n = self.calc_rmean_motion(n0)
-        tk = self.calc_tk(cal_time)
+        tk = self.calc_tk(cal_time, STT)
         Mk = self.calc_Mk(n, tk)
         Ek = self.calc_Ek(Mk)
         fk = self.calc_TA(Ek)
@@ -130,6 +130,10 @@ class GpsSat:
             print(f"xk, yk, zk : {self.xk}, {self.yk}, {self.zk}")
         except:
             print("Yet calc gps sat pos")
+
+    def show_raw(self):
+        for num, i in enumerate(self.raw_data):
+            print(num, i)
 
 def calc_E(M, e):
     Ek = M
@@ -148,8 +152,11 @@ def calc_gps_pos(best_data, cal_time):
     n = best_data.calc_rmean_motion(n0)
     tk = best_data.calc_tk(cal_time)
     Mk = best_data.calc_Mk(n, tk)
+    print("Mk : ", Mk)
     Ek = best_data.calc_Ek(Mk)
+    print("Ek : ", Ek)
     fk = best_data.calc_TA(Ek)
+    print("fk : ", fk)
     phik = best_data.calc_aol(fk)
     delta_uk, delta_rk, delta_ik = best_data.calc_delta_uri(phik)
     uk, rk, ik = best_data.calc_uri(delta_uk, delta_rk, delta_ik, phik, Ek, tk)
@@ -188,11 +195,12 @@ def read_data(prn):
 
 if __name__ == "__main__":
     GROUND_TRUE = [6731.601514, 15907.205394, -20553.641738]
-    PRN_NUMBER = 7
-    CAL_TIME = [15, 45, 0] # hour, minute, gps week day
+    PRN_NUMBER = 2
+    CAL_TIME = [17, 45, 0] # hour, minute, gps week day
 
     GpsSat_list = read_data(PRN_NUMBER)
     best_data = find_best_time(GpsSat_list, CAL_TIME)
+    best_data.show_raw()
     # [print(i) for i in best_data.raw_data]
     xk, yk, zk = calc_gps_pos(best_data, CAL_TIME)
     print("using data PRN: %d, yy/mm/dd/hh/mm/ss: %02d/%02d/%02d/%02d/%02d/%02d"
