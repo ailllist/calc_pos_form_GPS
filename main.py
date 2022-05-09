@@ -13,7 +13,7 @@ def RotSatPos(sat: gp.GpsSat, obs):
     sat.xk, sat.yk, sat.zk = SatPos[0], SatPos[1], SatPos[2]
 
 APPROX_POSITION_XYZ = [-3062023.5630, 4055449.0330, 3841819.2130]
-calc_time = [1, 45, 0] # hour, min, GPS_Week_day
+calc_time = [1, 45, 0] # hour, min, sec, GPS_Week_sec
 tgpt = ror.tot_sat_pos # Total Gps Pos for time (dict)
 keys = list(tgpt.keys())
 # 15  2  1  0  0  0.0000000
@@ -31,10 +31,11 @@ for i in keys:
     tmp_dist = (calc_time[0] - int(time_list[3]))*3600 + \
     (calc_time[1] - int(time_list[4]))*60 + 0 - float(time_list[5])
 
-    if tmp_dist >= 0 and time_dist > tmp_dist:
+    if tmp_dist > 0 and time_dist > tmp_dist:
         time_dist = tmp_dist
         best_time = i
 
+print("best_time : ", best_time)
 _15osat = tgpt[best_time]
 obs_sats = list(_15osat.keys())
 obs_gps_sats = []
@@ -52,7 +53,7 @@ for i in obs_gps_sats:
     else:
         GpsSat_list = gp.read_data(i[1:])
     bd_sat = gp.find_best_time(GpsSat_list, calc_time)
-    bd_sat.calc_gps_pos(calc_time)
+    print(bd_sat.PRN, bd_sat.Epoch)
     tot_data[i] = bd_sat
 gps_prn_list = list(tot_data.keys())
 
@@ -63,6 +64,10 @@ for num, i in enumerate(gps_prn_list):
 
     CA_code = float(_15osat[i]["C1"][0].strip())
 
+    STT = CA_code / 299_792_458
+    tot_data[i].calc_gps_pos(calc_time, STT)
+    print(STT)
+    # tot_data[i].calc_gps_pos(calc_time)
     RotSatPos(tot_data[i], CA_code)
 
     cal_x = tot_data[i].xk - APPROX_POSITION_XYZ[0]
