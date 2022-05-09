@@ -73,3 +73,8 @@ while True:
     except:
         break
     loop += 1
+
+if __name__ == "__main__":
+    list_keys = list(tot_sat_pos.keys())
+    for i in list_keys:
+        print(i, tot_sat_pos[i])
