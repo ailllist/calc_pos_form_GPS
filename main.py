@@ -30,8 +30,8 @@ for i in keys:
     time_list = tmp_str.split(" ")
     tmp_dist = (calc_time[0] - int(time_list[3]))*3600 + \
     (calc_time[1] - int(time_list[4]))*60 + 0 - float(time_list[5])
-    # TODO 해당 시각의 정보를 포함하는지, 포함하지 않는지 알아야됨. 그래야 > 0인지 >= 0인지 알 수 있음
-    if tmp_dist > 0 and time_dist > tmp_dist:
+
+    if tmp_dist >= 0 and time_dist > tmp_dist:
         time_dist = tmp_dist
         best_time = i
 
@@ -62,6 +62,7 @@ y = np.zeros(len(gps_prn_list))
 for num, i in enumerate(gps_prn_list):
 
     CA_code = float(_15osat[i]["C1"][0].strip())
+
     RotSatPos(tot_data[i], CA_code)
 
     cal_x = tot_data[i].xk - APPROX_POSITION_XYZ[0]
